@@ -172,8 +172,17 @@ def populate_mock_history():
             defect_type = random.choice(defects)
             confidence = round(random.uniform(85.0, 97.0), 1)
             
-        # Placeholders for paths (could represent mock saved files)
-        image_path = f"data/inspections/mock_{product_id}.jpg"
+        # Map mock defects to corresponding static demo images
+        if result == "PASS":
+            image_path = "static/mock_images/01_perfect_pcb_a.png"
+        else:
+            if defect_type == "Missing Component":
+                image_path = "static/mock_images/03_defect_missing_chip.png"
+            elif defect_type == "Component Misalignment":
+                image_path = "static/mock_images/04_defect_misaligned_chip.png"
+            else:
+                image_path = "static/mock_images/02_perfect_pcb_b.png"
+                
         model_version = "YOLOv8n-PCB-v1.0"
         
         records.append((timestamp, product_id, result, defect_type, confidence, image_path, model_version))

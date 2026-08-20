@@ -43,6 +43,16 @@ class SystemConfig(BaseModel):
 class ScanPayload(BaseModel):
     image: str = None  # Optional Base64 data: "data:image/jpeg;base64,..."
 
+class ReportPayload(BaseModel):
+    id: int
+    timestamp: str
+    product_id: str
+    result: str
+    defect_type: str = None
+    confidence: float
+    image_path: str = None
+    image_b64: str = None
+
 config = SystemConfig()
 
 # Global AI Inspector instance (will gracefully fall back to OpenCV if YOLO is not installed on Vercel)
@@ -267,7 +277,7 @@ def trigger_scan(payload: ScanPayload = None):
     # Log to SQLite DB
     log_id = log_inspection(product_id, result, defect_type, confidence, save_path)
 
-    # Generate ReportLab PDF report
+    # Generate ReportLab PDF report (saved locally in case local mode is running)
     report_filepath = os.path.join(REPORTS_DIR, f"report_{product_id}.pdf")
     rec_dict = {
         "id": log_id,
@@ -279,7 +289,10 @@ def trigger_scan(payload: ScanPayload = None):
         "image_path": save_path,
         "model_version": "YOLOv8n-PCB-v1.0"
     }
-    generate_pdf_report(rec_dict, report_filepath)
+    try:
+        generate_pdf_report(rec_dict, report_filepath)
+    except Exception:
+        pass
 
     return {
         "id": log_id,
@@ -291,6 +304,95 @@ def trigger_scan(payload: ScanPayload = None):
         "image_path": f"/data/inspections/{img_filename}",
         "report_path": f"/reports/report_{product_id}.pdf"
     }
+
+# Dynamic, stateless report generation endpoint for serverless environments
+@app.post("/api/reports/generate")
+def generate_report_stream(payload: ReportPayload):
+    import tempfile
+    
+    # 1. Resolve image bytes
+    image_bytes = None
+    if payload.image_b64:
+        try:
+            base64_str = payload.image_b64
+            if "," in base64_str:
+                base64_str = base64_str.split(",")[1]
+            image_bytes = base64.b64decode(base64_str)
+        except Exception:
+            pass
+            
+    if image_bytes is None and payload.image_path:
+        # Check static mock images
+        local_path = payload.image_path.lstrip("/")
+        if os.path.exists(local_path):
+            try:
+                with open(local_path, "rb") as f:
+                    image_bytes = f.read()
+            except Exception:
+                pass
+                
+    if image_bytes is None and payload.image_path:
+        # Check active scans folders
+        filename = os.path.basename(payload.image_path)
+        inspect_path = os.path.join(INSPECTIONS_DIR, filename)
+        if os.path.exists(inspect_path):
+            try:
+                with open(inspect_path, "rb") as f:
+                    image_bytes = f.read()
+            except Exception:
+                pass
+
+    # Save to temp image file (ReportLab takes a filesystem path)
+    temp_img_path = None
+    if image_bytes:
+        try:
+            with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as temp_img:
+                temp_img.write(image_bytes)
+                temp_img_path = temp_img.name
+        except Exception:
+            pass
+
+    # 2. Compile PDF dynamically inside temp folder
+    temp_pdf_path = None
+    try:
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as temp_pdf:
+            temp_pdf_path = temp_pdf.name
+            
+        rec_dict = {
+            "id": payload.id,
+            "timestamp": payload.timestamp,
+            "product_id": payload.product_id,
+            "result": payload.result,
+            "defect_type": payload.defect_type,
+            "confidence": payload.confidence,
+            "image_path": temp_img_path, # ReportLab reads from temp image
+            "model_version": "YOLOv8n-PCB-v1.0"
+        }
+        
+        generate_pdf_report(rec_dict, temp_pdf_path)
+        
+        # Read compiled PDF bytes
+        with open(temp_pdf_path, "rb") as f:
+            pdf_bytes = f.read()
+            
+        # Clean up files
+        if temp_img_path and os.path.exists(temp_img_path):
+            os.remove(temp_img_path)
+        if temp_pdf_path and os.path.exists(temp_pdf_path):
+            os.remove(temp_pdf_path)
+            
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename=VisionGuard_Report_{payload.product_id}.pdf"}
+        )
+    except Exception as e:
+        # Cleanup on failure
+        if temp_img_path and os.path.exists(temp_img_path):
+            os.remove(temp_img_path)
+        if temp_pdf_path and os.path.exists(temp_pdf_path):
+            os.remove(temp_pdf_path)
+        raise HTTPException(status_code=500, detail=f"Failed to compile PDF report: {str(e)}")
 
 # Analytics & History Endpoints
 @app.get("/api/analytics")
@@ -304,7 +406,11 @@ def get_history():
         # Standardize web routes for visual image references
         if h.get("image_path"):
             filename = os.path.basename(h["image_path"])
-            h["image_path"] = f"/data/inspections/{filename}"
+            # If the file path is a static mock image, keep it as is
+            if "static/mock_images" in h["image_path"]:
+                h["image_path"] = f"/{h['image_path'].replace(os.sep, '/')}"
+            else:
+                h["image_path"] = f"/data/inspections/{filename}"
         h["report_path"] = f"/reports/report_{h['product_id']}.pdf"
     return history
 

@@ -9,6 +9,7 @@ let appConfig = {
 
 let defectChartInstance = null;
 let currentHistoryData = [];
+let lastScanResult = null; // Stores last scan metadata for report compilation
 
 // Detect Cloud Mode (e.g. running on Vercel) vs Local Mode (localhost)
 const isCloudMode = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
@@ -252,6 +253,21 @@ function setupScannerListeners() {
     document.getElementById("trigger-scan-btn").addEventListener("click", () => {
         triggerQualityScan();
     });
+
+    // On-demand PDF compiler event binding for active scanner Result Card
+    document.getElementById("res-report-link").addEventListener("click", async (e) => {
+        e.preventDefault();
+        if (!lastScanResult) return;
+        
+        // If live webcam was scanning in browser cloud mode, extract base64 from canvas to embed in PDF
+        let b64 = null;
+        if (isCloudMode && !appConfig.demo_mode_active) {
+            const canvas = document.getElementById("browser-canvas");
+            b64 = canvas.toDataURL("image/jpeg");
+        }
+        
+        await downloadPDFReport(lastScanResult, b64);
+    });
 }
 
 // Helper to start/stop the browser-based camera feed (Cloud Vercel fallback)
@@ -387,6 +403,7 @@ async function triggerQualityScan() {
         
         if (res.ok) {
             const data = await res.json();
+            lastScanResult = data; // Keep metadata reference for dynamic PDF compilation
             renderInspectionResult(data);
             
             // If continuous feed is OFF, we display the returned inspection crop on the dashboard viewport
@@ -452,8 +469,45 @@ function renderInspectionResult(data) {
     } else {
         defectCard.style.display = "none";
     }
-    
-    document.getElementById("res-report-link").href = data.report_path;
+}
+
+// Dynamic, stateless PDF report downloader
+async function downloadPDFReport(recordData, base64Image = null) {
+    try {
+        const payload = {
+            id: recordData.id,
+            timestamp: recordData.timestamp,
+            product_id: recordData.product_id,
+            result: recordData.result,
+            defect_type: recordData.defect_type,
+            confidence: recordData.confidence,
+            image_path: recordData.image_path,
+            image_b64: base64Image
+        };
+        
+        const response = await fetch("/api/reports/generate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `VisionGuard_Report_${recordData.product_id}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        } else {
+            alert("Vercel serverless report generation failed.");
+        }
+    } catch (e) {
+        console.error("PDF download request failed:", e);
+        alert("Failed to communicate with Vercel PDF generation API.");
+    }
 }
 
 // Analytics and Charts Dashboard Section
@@ -652,5 +706,10 @@ function selectHistoryRow(id, element) {
         imgEl.src = "";
     }
     
-    document.getElementById("detail-report-link").href = record.report_path;
+    // Bind dynamic PDF compiler event listener to logs Detail Panel download link
+    const pdfLink = document.getElementById("detail-report-link");
+    pdfLink.onclick = async (e) => {
+        e.preventDefault();
+        await downloadPDFReport(record, null);
+    };
 }
