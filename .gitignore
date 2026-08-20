@@ -1,0 +1,21 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.vscode/
+.idea/
+
+# Local databases and visual logs
+data/database.sqlite
+data/inspections/ins_*.jpg
+data/inspections/mock_*.jpg
+
+# Compiled reports
+reports/report_*.pdf
+reports/test_report.pdf
+
+# Partial models or downloading states
+*.part
+*.stackdump
+yolov8n.pt
