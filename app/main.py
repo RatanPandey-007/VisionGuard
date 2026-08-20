@@ -41,17 +41,17 @@ class SystemConfig(BaseModel):
     demo_override: str = "None"       # "None", "Force PASS", "Force Missing", "Force Misaligned"
 
 class ScanPayload(BaseModel):
-    image: str = None  # Optional Base64 data: "data:image/jpeg;base64,..."
+    image: str | None = None  # Optional Base64 data: "data:image/jpeg;base64,..."
 
 class ReportPayload(BaseModel):
     id: int
     timestamp: str
     product_id: str
     result: str
-    defect_type: str = None
+    defect_type: str | None = None
     confidence: float
-    image_path: str = None
-    image_b64: str = None
+    image_path: str | None = None
+    image_b64: str | None = None
 
 config = SystemConfig()
 

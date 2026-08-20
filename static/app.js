@@ -733,9 +733,12 @@ async function downloadPDFReport(recordData, base64Image = null) {
             logToConsole(`PDF Report downloaded successfully for ID #${recordData.id}.`, "success");
         } else {
             const errData = await response.json().catch(() => ({}));
-            const errMsg = errData.detail || "Server compiler error.";
-            alert(`Vercel serverless report generation failed: ${errMsg}`);
-            logToConsole(`PDF compilation failed: ${errMsg}`, "error");
+            let errMsg = errData.detail || "Server compiler error.";
+            if (Array.isArray(errMsg)) {
+                errMsg = errMsg.map(err => `${err.loc.join('.')}: ${err.msg}`).join('\n');
+            }
+            alert(`Vercel serverless report generation failed:\n${errMsg}`);
+            logToConsole(`PDF compilation failed: ${errMsg.toString()}`, "error");
         }
     } catch (e) {
         console.error("PDF download request failed:", e);
