@@ -16,106 +16,122 @@
 <body>
     <div class="app-container">
         
-        <!-- SIDEBAR NAVIGATION MENU -->
+        <!-- SIDEBAR - HOUSES ORIGINAL SYSTEM CONFIGURATIONS & STATUS -->
         <aside class="sidebar">
             <div class="brand">
                 <i data-lucide="shield-check" class="brand-icon"></i>
                 <div class="brand-text">
                     <h2>VisionGuard Edge</h2>
-                    <p>Industrial Quality AI</p>
+                    <p>Offline AI Quality Inspection</p>
                 </div>
             </div>
             
             <div class="sidebar-divider"></div>
             
-            <!-- Side Navigation Menu -->
-            <nav class="nav-menu">
-                <button class="tab-btn active" data-tab="tab-landing">
-                    <i data-lucide="home"></i>
-                    <span>Overview</span>
-                </button>
-                <button class="tab-btn" data-tab="tab-scanner" id="nav-scanner-btn">
-                    <i data-lucide="scan"></i>
-                    <span>Inspect Feed</span>
-                </button>
-                <button class="tab-btn" data-tab="tab-dashboard" id="nav-dashboard-btn">
-                    <i data-lucide="bar-chart-2"></i>
-                    <span>Analytics</span>
-                </button>
-                <button class="tab-btn" data-tab="tab-history" id="nav-history-btn">
-                    <i data-lucide="history"></i>
-                    <span>Inspection Logs</span>
-                </button>
-                <button class="tab-btn" data-tab="tab-reports" id="nav-reports-btn">
-                    <i data-lucide="file-text"></i>
-                    <span>Audit Reports</span>
-                </button>
-                <button class="tab-btn" data-tab="tab-settings" id="nav-settings-btn">
-                    <i data-lucide="sliders"></i>
-                    <span>System Settings</span>
-                </button>
-            </nav>
+            <!-- System Configurations (Original Position) -->
+            <div class="sidebar-section">
+                <h3><i data-lucide="settings"></i> System Configuration</h3>
+                
+                <div class="form-group checkbox-group">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="demo-mode-toggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                    <span class="label-text">Demo Mode Fallback</span>
+                </div>
+                
+                <div class="form-group" id="camera-select-group" style="display: none;">
+                    <label for="camera-select">Active Camera Index</label>
+                    <select id="camera-select" class="form-select">
+                        <option value="0">Camera 0</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Parameter Settings (Original Position) -->
+            <div class="sidebar-section">
+                <h3><i data-lucide="sliders"></i> Parameters</h3>
+                <div class="form-group">
+                    <div class="slider-header">
+                        <label for="threshold-slider">Decision Threshold</label>
+                        <span id="threshold-val">85.0%</span>
+                    </div>
+                    <input type="range" id="threshold-slider" class="form-slider" min="50" max="100" value="85" step="0.5">
+                    <p class="help-text">Inspections with AI confidence below this value are flagged as FAIL.</p>
+                </div>
+            </div>
             
             <div class="sidebar-divider"></div>
+            
+            <!-- System Health Indicators (Original Position) -->
+            <div class="sidebar-section system-health">
+                <h3><i data-lucide="activity"></i> System Health</h3>
+                <div class="health-item">
+                    <span class="health-label">AI Engine:</span>
+                    <span class="health-value status-ok" id="status-engine">ONLINE (CPU)</span>
+                </div>
+                <div class="health-item">
+                    <span class="health-label">Camera Source:</span>
+                    <span class="health-value" id="status-source">STATIC DEMO</span>
+                </div>
+                <div class="health-item">
+                    <span class="health-label">Database:</span>
+                    <span class="health-value status-ok" id="status-db">SQLITE CONNECTED</span>
+                </div>
+            </div>
             
             <div class="sidebar-footer">
                 <p>MSME Idea Hackathon 6.0</p>
-                <p>Prototype PoC v1.0.0</p>
+                <p>Prototype Version 1.0.0</p>
             </div>
         </aside>
 
-        <!-- MAIN DISPLAY PANELS -->
+        <!-- MAIN CONTENT AREA -->
         <main class="main-content">
             
-            <!-- PERSISTENT TOP SYSTEM BAR -->
+            <!-- HEADER / TOPBAR NAVIGATION -->
             <header class="topbar">
-                <div class="topbar-brand">
-                    <span class="telemetry-group">
-                        <span class="telemetry-item model"><span class="label">MODEL:</span> <span class="val font-mono">YOLOv8n-PCB-v1.0</span></span>
-                    </span>
-                </div>
-                <div class="topbar-status">
-                    <span class="status-indicator online" id="topbar-engine-status">
-                        <span class="dot"></span> AI ENGINE ONLINE
-                    </span>
-                    <span class="status-indicator online" id="topbar-camera-status">
-                        <span class="dot"></span> CAMERA CONNECTED
-                    </span>
-                    <span class="status-indicator online" id="topbar-inference-status">
-                        <span class="dot"></span> LOCAL INFERENCE
-                    </span>
-                </div>
-                <div class="topbar-telemetry">
-                    <span class="telemetry-item"><span class="label">LATENCY:</span> <span class="val font-mono" id="topbar-latency">24ms</span></span>
-                    <span class="telemetry-item"><span class="label">FPS:</span> <span class="val font-mono" id="topbar-fps">30</span></span>
-                </div>
+                <nav class="nav-tabs">
+                    <button class="tab-btn active" data-tab="tab-landing">
+                        <i data-lucide="home"></i> Landing & Overview
+                    </button>
+                    <button class="tab-btn" data-tab="tab-scanner" id="nav-scanner-btn">
+                        <i data-lucide="scan-face"></i> Quality Scanner
+                    </button>
+                    <button class="tab-btn" data-tab="tab-dashboard" id="nav-dashboard-btn">
+                        <i data-lucide="bar-chart-3"></i> Analytics Dashboard
+                    </button>
+                    <button class="tab-btn" data-tab="tab-history" id="nav-history-btn">
+                        <i data-lucide="history"></i> Inspection Logs
+                    </button>
+                </nav>
             </header>
             
-            <!-- TAB DISPLAY PANELS -->
+            <!-- TAB PANELS -->
             <div class="tab-panels-container">
                 
-                <!-- TAB 1: LANDING / OVERVIEW PANEL -->
+                <!-- TAB 1: LANDING & OVERVIEW -->
                 <section id="tab-landing" class="tab-panel active">
                     <div class="hero-section">
                         <div class="hero-content">
-                            <span class="badge">MSME Idea Hackathon 6.0 PoC</span>
+                            <span class="badge">MSME Idea Hackathon 6.0 Prototype</span>
                             <h1>VISIONGUARD EDGE</h1>
-                            <h2>AI-Assisted Visual Quality Inspection for Indian MSMEs</h2>
+                            <h2>Affordable Offline AI Quality Inspection for Indian MSMEs</h2>
                             <p class="hero-desc">
-                                Retrofit an affordable offline AI visual inspector into your manual assembly lines. 
-                                Designed to run fully locally on existing workshop hardware for under ₹5,000.
+                                Turn any off-the-shelf camera or webcam into an offline AI visual inspection system. 
+                                Designed specifically for retrofitting into Indian workshop floors for under ₹5,000.
                             </p>
                             <div class="hero-actions">
                                 <button class="btn btn-primary btn-lg" onclick="switchTab('tab-scanner')">
                                     <i data-lucide="scan"></i> Launch Quality Scanner
                                 </button>
                                 <button class="btn btn-secondary btn-lg" onclick="switchTab('tab-dashboard')">
-                                    <i data-lucide="bar-chart-2"></i> View Factory Yield Dashboard
+                                    <i data-lucide="line-chart"></i> View Yield Dashboard
                                 </button>
                             </div>
                         </div>
                         
-                        <!-- High-fidelity pure CSS visual mock demonstrating PCB alignment & AI boxes -->
+                        <!-- High-fidelity pure CSS mockup visual representing PCB alignment & AI boxes -->
                         <div class="hero-preview-visual">
                             <div class="mock-viewport">
                                 <div class="mock-header">
@@ -127,7 +143,7 @@
                                     <div class="mock-trace horizontal trace-2"></div>
                                     <div class="mock-trace vertical trace-3"></div>
                                     
-                                    <!-- Rotated PCB Components with AI boxes -->
+                                    <!-- Components with simulated bounding boxes -->
                                     <div class="mock-chip chip-1">
                                         <span class="ai-box-label green">C1 [0.0°]</span>
                                     </div>
@@ -166,7 +182,7 @@
                         </div>
                     </div>
                     
-                    <!-- Pipeline horizontal flowchart -->
+                    <!-- Flowchart pipeline -->
                     <div class="pipeline-section">
                         <h3><i data-lucide="git-commit"></i> How VisionGuard Works (Inspection Pipeline)</h3>
                         <div class="pipeline-flow">
@@ -245,11 +261,79 @@
                     </div>
                 </section>
                 
-                <!-- TAB 2: LIVE INSPECTION PANEL -->
+                <!-- TAB 2: QUALITY SCANNER -->
                 <section id="tab-scanner" class="tab-panel">
                     <div class="scanner-layout">
-                        <!-- Left Panel: Viewport + Terminal Console -->
-                        <div class="scanner-main-view">
+                        <!-- Left Panel: Scanner Controls -->
+                        <div class="scanner-controls">
+                            <div class="panel-card">
+                                <h3><i data-lucide="terminal"></i> Scanner Control Panel</h3>
+                                
+                                <div class="form-group">
+                                    <label for="inspection-mode">Inspection Mode</label>
+                                    <select id="inspection-mode" class="form-select">
+                                        <option value="PCB">PCB Component Check (CV Segmenter)</option>
+                                        <option value="GEAR">Metal Gear Spacer Check (CV Geometry)</option>
+                                        <option value="PILLS">Pills Blister Pack Check (CV Count)</option>
+                                        <option value="YOLO">General YOLO Detection (COCO)</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="control-actions">
+                                    <button id="trigger-scan-btn" class="btn btn-primary btn-full btn-lg">
+                                        <i data-lucide="camera"></i> Trigger Quality Scan (Single Frame)
+                                    </button>
+                                    
+                                    <div class="stream-toggle-wrapper">
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="stream-toggle">
+                                            <span class="slider"></span>
+                                        </label>
+                                        <span class="label-text">Activate Continuous Feed (Live Preview)</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="sidebar-divider"></div>
+                                
+                                <div class="override-section">
+                                    <h4><i data-lucide="alert-triangle"></i> Manual Overrides (Demo Pitch)</h4>
+                                    <div class="form-group">
+                                        <label for="override-select">Force AI Result Pattern</label>
+                                        <select id="override-select" class="form-select">
+                                            <option value="None">None (Run Live Algorithm)</option>
+                                            <option value="Force PASS">Force PASS</option>
+                                            <option value="Force Defect: Missing Component">Force Defect: Missing Component</option>
+                                            <option value="Force Defect: Misalignment">Force Defect: Misalignment</option>
+                                        </select>
+                                        <p class="help-text">Forces outcomes temporarily to demonstrate edge defect alerts to judges.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="sidebar-divider"></div>
+                                
+                                <!-- Virtual PLC Relay Simulator Widget -->
+                                <div class="plc-relay-card">
+                                    <h4><i data-lucide="cpu"></i> Retrofit IoT Relay Simulator</h4>
+                                    <div class="relay-pins">
+                                        <div class="relay-pin">
+                                            <span class="pin-status active" id="relay-conveyor">ON</span>
+                                            <span class="pin-label">Conveyor relay</span>
+                                        </div>
+                                        <div class="relay-pin">
+                                            <span class="pin-status" id="relay-alarm">OFF</span>
+                                            <span class="pin-label">Alarm relays</span>
+                                        </div>
+                                        <div class="relay-pin">
+                                            <span class="pin-status" id="relay-diverter">OFF</span>
+                                            <span class="pin-label">Diverter relays</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Center Panel: Video Viewport -->
+                        <div class="scanner-viewport">
                             <div class="panel-card viewport-card">
                                 <div class="viewport-header">
                                     <h3><i data-lucide="video"></i> Live Inspection Viewport</h3>
@@ -262,30 +346,29 @@
                                     <!-- Initially show standby pattern -->
                                     <div class="standby-screen" id="standby-screen">
                                         <i data-lucide="aperture" class="standby-icon"></i>
-                                        <p>Camera Standby</p>
+                                        <p>Camera Standby.</p>
                                         <p class="small">Activate continuous live preview or trigger a single frame scan to start.</p>
                                     </div>
                                     <img id="live-stream-img" src="" alt="Live Inspection Frame" style="display: none;">
                                     <video id="browser-video" autoplay playsinline style="display: none; width: 100%; height: 100%; object-fit: contain;"></video>
                                     <canvas id="browser-canvas" width="640" height="480" style="display: none;"></canvas>
                                 </div>
-                            </div>
-                            
-                            <!-- Scrolling Live AI Execution Logs Console -->
-                            <div class="console-card">
-                                <div class="console-header">
-                                    <span><i data-lucide="terminal"></i> Live Edge AI Execution Console</span>
-                                    <button class="btn btn-secondary btn-sm" id="clear-console-btn" style="padding: 2px 6px; font-size: 0.65rem;">Clear</button>
-                                </div>
-                                <div class="console-logs" id="console-logs">
-                                    <div class="log-line info">[13:00:00] [SYSTEM] Engine Online (Deterministic CV Segmenters). Ready.</div>
+                                
+                                <!-- Scrolling Live AI Execution Logs Console -->
+                                <div class="console-card">
+                                    <div class="console-header">
+                                        <span><i data-lucide="terminal"></i> Live Edge AI Execution Console</span>
+                                        <button class="btn btn-secondary btn-sm" id="clear-console-btn" style="padding: 2px 6px; font-size: 0.65rem;">Clear</button>
+                                    </div>
+                                    <div class="console-logs" id="console-logs">
+                                        <div class="log-line info">[13:00:00] [SYSTEM] Engine Online (Deterministic CV Segmenters). Ready.</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- Right Panel: Result Summary Card -->
-                        <div class="scanner-results-view">
-                            <!-- Inspection Result Status Card -->
+                        <!-- Right Panel: Inspection Result Card -->
+                        <div class="scanner-results">
                             <div class="panel-card results-card" id="results-panel">
                                 <h3><i data-lucide="clipboard-list"></i> Inspection Result</h3>
                                 
@@ -295,7 +378,7 @@
                                 </div>
                                 
                                 <div class="result-details" id="result-details" style="display: none;">
-                                    <!-- Dynamic Status Badge -->
+                                    <!-- Dynamic Badge -->
                                     <div class="result-badge" id="res-badge">
                                         <span id="res-badge-text">PASS</span>
                                     </div>
@@ -315,7 +398,6 @@
                                         <div class="progress-bar" id="res-confidence-bar" style="width: 98.7%;"></div>
                                     </div>
                                     
-                                    <!-- Defect Anomaly Explanations -->
                                     <div class="defect-explanation" id="res-defect-card" style="display: none;">
                                         <h5><i data-lucide="alert-circle"></i> Visual Defect Anomaly</h5>
                                         <p id="res-defect-desc">Component rotation angle limits exceeded (25.0 degrees offset).</p>
@@ -333,55 +415,19 @@
                                     </div>
                                 </div>
                             </div>
-                            
-                            <!-- Control Triggers Widget -->
-                            <div class="panel-card scan-triggers-card">
-                                <h3><i data-lucide="play"></i> Scan Trigger Controls</h3>
-                                <button id="trigger-scan-btn" class="btn btn-primary btn-full btn-lg" style="margin-bottom: 12px;">
-                                    <i data-lucide="camera"></i> Trigger Inspection Scan
-                                </button>
-                                
-                                <div class="stream-toggle-wrapper">
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" id="stream-toggle">
-                                        <span class="slider"></span>
-                                    </label>
-                                    <span class="label-text">Continuous Feed Stream</span>
-                                </div>
-                            </div>
-                            
-                            <!-- Virtual PLC Relay Simulator Widget -->
-                            <div class="panel-card plc-relay-card">
-                                <h3><i data-lucide="cpu"></i> Retrofit IoT Relay Simulator</h3>
-                                <div class="relay-pins">
-                                    <div class="relay-pin">
-                                        <span class="pin-status active" id="relay-conveyor">ON</span>
-                                        <span class="pin-label">Conveyor relay</span>
-                                    </div>
-                                    <div class="relay-pin">
-                                        <span class="pin-status" id="relay-alarm">OFF</span>
-                                        <span class="pin-label">Alarm relays</span>
-                                    </div>
-                                    <div class="relay-pin">
-                                        <span class="pin-status" id="relay-diverter">OFF</span>
-                                        <span class="pin-label">Diverter relays</span>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </section>
                 
-                <!-- TAB 3: QUALITY ANALYTICS PANEL -->
+                <!-- TAB 3: ANALYTICS DASHBOARD -->
                 <section id="tab-dashboard" class="tab-panel">
                     <div class="dashboard-header">
-                        <h2>📊 Yield Dashboard Overview</h2>
+                        <h2>📊 Factory Quality Yield Board</h2>
                         <button id="reset-db-btn" class="btn btn-secondary btn-sm">
-                            <i data-lucide="refresh-cw"></i> Reset SQLite Records
+                            <i data-lucide="refresh-cw"></i> Reset & Reload Mock History
                         </button>
                     </div>
                     
-                    <!-- KPI Row -->
                     <div class="stats-row">
                         <div class="stat-card">
                             <span class="stat-label">Total Inspected Units</span>
@@ -396,7 +442,7 @@
                             <span class="stat-num" id="stat-failed">116</span>
                         </div>
                         <div class="stat-card stat-yield">
-                            <span class="stat-label">Quality Yield Margin</span>
+                            <span class="stat-label">Quality Yield (Pass Rate)</span>
                             <span class="stat-num" id="stat-yield">90.72%</span>
                         </div>
                     </div>
@@ -429,7 +475,7 @@
                                     <span class="diag-value status-badge" id="yield-status-badge">PASSING</span>
                                 </div>
                                 <div class="diag-item">
-                                    <span class="diag-label">Decision Threshold Limit</span>
+                                    <span class="diag-label">Target Prototype Decision Limit</span>
                                     <span class="diag-value font-mono" id="diag-config-threshold">85.0%</span>
                                 </div>
                             </div>
@@ -439,7 +485,7 @@
                                 <div class="gauge-bar-outer">
                                     <div class="gauge-bar-inner" id="gauge-fill" style="width: 90.72%;"></div>
                                 </div>
-                                <span class="gauge-caption" id="gauge-caption">Yield conforming to MSME prototype target.</span>
+                                <span class="gauge-caption" id="gauge-caption">Yield conforming to target MSME quality specifications.</span>
                             </div>
                             
                             <div class="advisory-card" style="margin-top: 24px;">
@@ -453,18 +499,18 @@
                     </div>
                 </section>
                 
-                <!-- TAB 4: INSPECTION LOGS PANEL -->
+                <!-- TAB 4: INSPECTION LOGS -->
                 <section id="tab-history" class="tab-panel">
-                    <h2>📋 Quality Inspection Archives</h2>
-                    <p class="sub-text">Search, filter, and drill down on logged visual inspections.</p>
+                    <h2>📋 Quality Log Archive</h2>
+                    <p class="sub-text">Filter, inspect, and export compiled reports for all visual quality logs.</p>
                     
                     <div class="history-layout">
-                        <!-- Left Panel: Table Logs -->
+                        <!-- Left Panel: Log Table -->
                         <div class="history-table-container panel-card">
                             <div class="table-header-controls">
                                 <div class="search-box">
                                     <i data-lucide="search"></i>
-                                    <input type="text" id="log-search-input" placeholder="Filter Logs by Product ID...">
+                                    <input type="text" id="log-search-input" placeholder="Search Logs by Product ID...">
                                 </div>
                             </div>
                             
@@ -476,7 +522,7 @@
                                             <th>Timestamp</th>
                                             <th>Product ID</th>
                                             <th>Result</th>
-                                            <th>Defect Class</th>
+                                            <th>Defect Type</th>
                                             <th>Confidence</th>
                                         </tr>
                                     </thead>
@@ -487,14 +533,14 @@
                             </div>
                         </div>
                         
-                        <!-- Right Panel: Selected Inspection Details -->
+                        <!-- Right Panel: Log Detail view -->
                         <div class="history-preview-container">
                             <div class="panel-card detail-card" id="history-detail-panel">
-                                <h3><i data-lucide="eye"></i> Record Details</h3>
+                                <h3><i data-lucide="eye"></i> Inspection Details</h3>
                                 
                                 <div id="detail-placeholder" class="result-placeholder">
                                     <i data-lucide="mouse-pointer-click" class="placeholder-icon"></i>
-                                    <p>Select a quality run from the logs grid to inspect crop overlays and print reports.</p>
+                                    <p>Select a log record from the table to preview visual overlay coordinates and download reports.</p>
                                 </div>
                                 
                                 <div id="detail-content" style="display: none;">
@@ -537,141 +583,6 @@
                                             <i data-lucide="download"></i> Download Report PDF
                                         </a>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-                
-                <!-- NEW TAB 5: AUDIT REPORTS CENTER -->
-                <section id="tab-reports" class="tab-panel">
-                    <h2>📋 Compliance Audit Reports Center</h2>
-                    <p class="sub-text">Export and manage generated ReportLab PDF quality inspections for records archiving.</p>
-                    
-                    <div class="panel-card reports-center-card">
-                        <div class="table-header-controls">
-                            <div class="search-box">
-                                <i data-lucide="search"></i>
-                                <input type="text" id="report-search-input" placeholder="Filter reports by ID/Product...">
-                            </div>
-                        </div>
-                        
-                        <div class="table-scroll-wrapper">
-                            <table class="history-table">
-                                <thead>
-                                    <tr>
-                                        <th>Report ID</th>
-                                        <th>Timestamp</th>
-                                        <th>Product ID</th>
-                                        <th>Inspec Result</th>
-                                        <th>Defect Class</th>
-                                        <th>Confidence</th>
-                                        <th style="text-align: center;">Export Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="reports-table-body">
-                                    <!-- Dynamic logs list with direct PDF download button -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-                
-                <!-- NEW TAB 6: SYSTEM CONFIGURATION & SETTINGS -->
-                <section id="tab-settings" class="tab-panel">
-                    <h2>⚙️ System Calibration Settings</h2>
-                    <p class="sub-text">Adjust inference thresholds, toggle demo override patterns, and calibrate camera input indices.</p>
-                    
-                    <div class="settings-grid">
-                        <!-- Column 1: AI Inspections Parameters -->
-                        <div class="panel-card">
-                            <h3><i data-lucide="sliders"></i> Core Vision Parameters</h3>
-                            
-                            <div class="form-group">
-                                <label for="inspection-mode">Product Inspection Profile</label>
-                                <select id="inspection-mode" class="form-select">
-                                    <option value="PCB">PCB Component Check (CV Segmenter)</option>
-                                    <option value="GEAR">Metal Gear Spacer Check (CV Geometry)</option>
-                                    <option value="PILLS">Pills Blister Pack Check (CV Count)</option>
-                                    <option value="YOLO">General YOLO Detection (COCO)</option>
-                                </select>
-                                <p class="help-text" style="margin-top: 6px;">Changes the deterministic segmenter algorithms executed by the backend.</p>
-                            </div>
-                            
-                            <div class="form-group" style="margin-top: 24px;">
-                                <div class="slider-header">
-                                    <label for="threshold-slider">Prototype Decision Threshold</label>
-                                    <span id="threshold-val" class="font-mono font-bold" style="color: var(--color-primary);">85.0%</span>
-                                </div>
-                                <input type="range" id="threshold-slider" class="form-slider" min="50" max="100" value="85" step="0.5">
-                                <p class="help-text">Inspections matching confidence values below this target will be flagged as defects.</p>
-                            </div>
-                        </div>
-                        
-                        <!-- Column 2: Camera Calibration -->
-                        <div class="panel-card">
-                            <h3><i data-lucide="camera"></i> Camera Source Configurations</h3>
-                            
-                            <div class="form-group checkbox-group" style="padding: 12px; border: 1px solid var(--border-color); border-radius: 6px; background: rgba(255,255,255,0.01);">
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="demo-mode-toggle" checked>
-                                    <span class="slider"></span>
-                                </label>
-                                <span class="label-text">Enable Demo Mode Fallback</span>
-                            </div>
-                            <p class="help-text" style="margin-top: -6px; margin-bottom: 20px;">Uses local mock visual sets inside data/demo_samples/ instead of physical hardware.</p>
-                            
-                            <div class="form-group" id="camera-select-group" style="display: none;">
-                                <label for="camera-select">Physical Camera Index</label>
-                                <select id="camera-select" class="form-select">
-                                    <option value="0">Camera Index 0</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <!-- Column 3: Demo Pitch Controller -->
-                        <div class="panel-card">
-                            <h3><i data-lucide="alert-triangle"></i> Demo Override Pitch Controls</h3>
-                            
-                            <div class="form-group">
-                                <label for="override-select">Force AI Prediction Pattern</label>
-                                <select id="override-select" class="form-select">
-                                    <option value="None">None (Run Live Algorithms)</option>
-                                    <option value="Force PASS">Force PASS Result</option>
-                                    <option value="Force Defect: Missing Component">Force Defect: Missing Component</option>
-                                    <option value="Force Defect: Misalignment">Force Defect: Misalignment</option>
-                                </select>
-                                <p class="help-text" style="margin-top: 6px;">Overrides algorithmic decisions for Pitch presentations to demonstrate failures dynamically.</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Retrofit Architecture Visual Mapping -->
-                    <div class="panel-card" style="margin-top: 24px;">
-                        <h3><i data-lucide="git-branch"></i> Retrofit Integration Architecture mapping</h3>
-                        <div class="retrofit-layout-visual" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 15px;">
-                            <div class="arch-box">
-                                <h5>ACTIVE PROTOTYPE JIG SETUP</h5>
-                                <div class="arch-flow" style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); padding: 12px; background: rgba(0,0,0,0.2); border-radius: 4px; border: 1px solid var(--border-color); margin-top: 6px; line-height: 1.6;">
-                                    Webcam / Browser Camera Sensor<br>
-                                    &nbsp;&nbsp;↓<br>
-                                    FastAPI Localhost Controller (Edge AI)<br>
-                                    &nbsp;&nbsp;↓<br>
-                                    OpenCV Contour/Segmentation Pipelines<br>
-                                    &nbsp;&nbsp;↓<br>
-                                    SQLite Inspection log -> ReportLab PDF Report
-                                </div>
-                            </div>
-                            <div class="arch-box">
-                                <h5 style="color: var(--color-warning);">FUTURE PRODUCTION LINE INTEGRATION</h5>
-                                <div class="arch-flow" style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); padding: 12px; background: rgba(0,0,0,0.2); border-radius: 4px; border: 1px solid var(--border-color); margin-top: 6px; line-height: 1.6;">
-                                    Fixed Industrial Over-the-belt Camera<br>
-                                    &nbsp;&nbsp;↓<br>
-                                    VisionGuard Edge Compute Server (Intel NUC/Raspberry Pi)<br>
-                                    &nbsp;&nbsp;↓<br>
-                                    Opto-isolated GPIO/Modbus Signal Output<br>
-                                    &nbsp;&nbsp;↓<br>
-                                    PLC / Conveyor Relay Driver -> Actuator Rejection Arm
                                 </div>
                             </div>
                         </div>
