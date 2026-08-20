@@ -37,7 +37,7 @@ class SystemConfig(BaseModel):
     demo_mode_active: bool = True
     camera_index: int = 0
     decision_threshold: float = 85.0
-    inspection_mode: str = "PCB"      # "PCB" or "YOLO"
+    inspection_mode: str = "PCB"      # "PCB", "GEAR", "PILLS", or "YOLO"
     demo_override: str = "None"       # "None", "Force PASS", "Force Missing", "Force Misaligned"
 
 class ScanPayload(BaseModel):
@@ -65,14 +65,21 @@ class CameraManager:
         self.camera = None
         self.demo_mode_active = True
         self.camera_index = 0
+        self.filter_keyword = "PCB"
         self.latest_raw_frame = None
         self.latest_annotated_frame = None
 
-    def configure(self, demo_mode: bool, index: int):
+    def configure(self, demo_mode: bool, index: int, filter_keyword: str = None):
         with self.lock:
-            if self.demo_mode_active != demo_mode or self.camera_index != index:
+            # Recreate camera if settings or keywords changed
+            if (self.demo_mode_active != demo_mode or 
+                self.camera_index != index or 
+                getattr(self, "filter_keyword", None) != filter_keyword):
+                
                 self.demo_mode_active = demo_mode
                 self.camera_index = index
+                self.filter_keyword = filter_keyword
+                
                 if self.camera is not None:
                     try:
                         self.camera.release()
@@ -83,7 +90,7 @@ class CameraManager:
     def get_camera(self):
         if self.camera is None:
             if self.demo_mode_active:
-                self.camera = DemoImageCamera()
+                self.camera = DemoImageCamera(filter_keyword=self.filter_keyword)
             else:
                 self.camera = WebcamCamera(self.camera_index)
         return self.camera
@@ -112,7 +119,7 @@ class CameraManager:
                 self.camera = None
 
 camera_manager = CameraManager()
-camera_manager.configure(config.demo_mode_active, config.camera_index)
+camera_manager.configure(config.demo_mode_active, config.camera_index, config.inspection_mode)
 
 # Serve generated static resources and frontend
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -145,7 +152,7 @@ def get_config():
 def update_config(new_config: SystemConfig):
     global config
     config = new_config
-    camera_manager.configure(config.demo_mode_active, config.camera_index)
+    camera_manager.configure(config.demo_mode_active, config.camera_index, config.inspection_mode)
     return {"status": "success", "config": config}
 
 @app.get("/api/cameras")
@@ -172,6 +179,12 @@ def gen_frames():
         if config.inspection_mode == "PCB":
             res = inspector.inspect_pcb_vision(frame, config.decision_threshold)
             annotated = res["annotated_frame"]
+        elif config.inspection_mode == "GEAR":
+            res = inspector.inspect_gear_vision(frame, config.decision_threshold)
+            annotated = res["annotated_frame"]
+        elif config.inspection_mode == "PILLS":
+            res = inspector.inspect_pills_vision(frame, config.decision_threshold)
+            annotated = res["annotated_frame"]
         else:
             annotated, _ = inspector.inspect_yolo_coco(frame)
 
@@ -197,7 +210,6 @@ def trigger_scan(payload: ScanPayload = None):
     # 1. Acquire Image (Either decoded from payload, or snapped from camera)
     if payload and payload.image:
         try:
-            # Decode base64 image uploaded from browser camera
             base64_str = payload.image
             if "," in base64_str:
                 base64_str = base64_str.split(",")[1]
@@ -210,13 +222,20 @@ def trigger_scan(payload: ScanPayload = None):
             raise HTTPException(status_code=400, detail=f"Invalid base64 image data: {str(e)}")
             
     if frame is None:
-        # Fallback to backend local CameraManager
         ret, frame = camera_manager.capture_frame()
         if not ret or frame is None:
             raise HTTPException(status_code=500, detail="Failed to grab frame from camera source.")
 
-    # Unique product id
-    product_id = f"PCB-{int(time.time()) % 10000}"
+    # Generate unique product id based on product inspection type
+    prefix = "YOL"
+    if config.inspection_mode == "PCB":
+        prefix = "PCB"
+    elif config.inspection_mode == "GEAR":
+        prefix = "GER"
+    elif config.inspection_mode == "PILLS":
+        prefix = "PIL"
+        
+    product_id = f"{prefix}-{int(time.time()) % 10000}"
     timestamp_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     # Apply Demo Override if enabled
@@ -254,6 +273,18 @@ def trigger_scan(payload: ScanPayload = None):
         # Run actual vision algorithm
         if config.inspection_mode == "PCB":
             res = inspector.inspect_pcb_vision(frame, config.decision_threshold)
+            result = res["result"]
+            defect_type = res["defect_type"]
+            confidence = res["confidence"]
+            annotated = res["annotated_frame"]
+        elif config.inspection_mode == "GEAR":
+            res = inspector.inspect_gear_vision(frame, config.decision_threshold)
+            result = res["result"]
+            defect_type = res["defect_type"]
+            confidence = res["confidence"]
+            annotated = res["annotated_frame"]
+        elif config.inspection_mode == "PILLS":
+            res = inspector.inspect_pills_vision(frame, config.decision_threshold)
             result = res["result"]
             defect_type = res["defect_type"]
             confidence = res["confidence"]
@@ -406,7 +437,6 @@ def get_history():
         # Standardize web routes for visual image references
         if h.get("image_path"):
             filename = os.path.basename(h["image_path"])
-            # If the file path is a static mock image, keep it as is
             if "static/mock_images" in h["image_path"]:
                 h["image_path"] = f"/{h['image_path'].replace(os.sep, '/')}"
             else:

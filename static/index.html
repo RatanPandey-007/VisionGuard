@@ -187,6 +187,8 @@
                                     <label for="inspection-mode">Inspection Mode</label>
                                     <select id="inspection-mode" class="form-select">
                                         <option value="PCB">PCB Component Check (CV Segmenter)</option>
+                                        <option value="GEAR">Metal Gear Spacer Check (CV Geometry)</option>
+                                        <option value="PILLS">Pills Blister Pack Check (CV Count)</option>
                                         <option value="YOLO">General YOLO Detection (COCO)</option>
                                     </select>
                                 </div>
@@ -220,6 +222,28 @@
                                         <p class="help-text">Forces outcomes temporarily to demonstrate edge defect alerts to judges.</p>
                                     </div>
                                 </div>
+                                
+                                <div class="sidebar-divider"></div>
+                                
+                                <!-- NEW: PLC Relay Controller Simulator -->
+                                <div class="plc-relay-card">
+                                    <h4><i data-lucide="cpu"></i> Retrofit IoT Relay Simulator</h4>
+                                    <div class="relay-pins">
+                                        <div class="relay-pin">
+                                            <span class="pin-status active" id="relay-conveyor">ON</span>
+                                            <span class="pin-label">Conveyor relay</span>
+                                        </div>
+                                        <div class="relay-pin">
+                                            <span class="pin-status" id="relay-alarm">OFF</span>
+                                            <span class="pin-label">Alarm relays</span>
+                                        </div>
+                                        <div class="relay-pin">
+                                            <span class="pin-status" id="relay-diverter">OFF</span>
+                                            <span class="pin-label">Diverter relays</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
                             </div>
                         </div>
                         
@@ -244,6 +268,18 @@
                                     <video id="browser-video" autoplay playsinline style="display: none; width: 100%; height: 100%; object-fit: contain;"></video>
                                     <canvas id="browser-canvas" width="640" height="480" style="display: none;"></canvas>
                                 </div>
+                                
+                                <!-- NEW: Scrolling Live AI Execution Logs Console -->
+                                <div class="console-card">
+                                    <div class="console-header">
+                                        <span><i data-lucide="terminal"></i> Live Edge AI Execution Console</span>
+                                        <button class="btn btn-secondary btn-sm" id="clear-console-btn" style="padding: 2px 6px; font-size: 0.65rem;">Clear</button>
+                                    </div>
+                                    <div class="console-logs" id="console-logs">
+                                        <div class="log-line info">[13:00:00] [SYSTEM] Engine Online (Deterministic CV Segmenters). Ready.</div>
+                                    </div>
+                                </div>
+                                
                             </div>
                         </div>
                         
@@ -328,12 +364,22 @@
                     </div>
                     
                     <div class="dashboard-charts-grid">
-                        <div class="panel-card chart-container-card">
-                            <h3><i data-lucide="bar-chart-2"></i> Defect Distribution Matrix</h3>
-                            <div class="chart-wrapper">
-                                <canvas id="defectChart"></canvas>
+                        <div class="charts-left-col">
+                            <div class="panel-card chart-container-card">
+                                <h3><i data-lucide="bar-chart-2"></i> Defect Distribution Matrix</h3>
+                                <div class="chart-wrapper">
+                                    <canvas id="defectChart"></canvas>
+                                </div>
+                            </div>
+                            <!-- NEW: Chart.js Line Graph for Quality Yield Timeline -->
+                            <div class="panel-card chart-container-card" style="margin-top: 24px;">
+                                <h3><i data-lucide="trending-up"></i> Quality Yield Timeline Trend (Last 5 Days)</h3>
+                                <div class="chart-wrapper">
+                                    <canvas id="yieldLineChart"></canvas>
+                                </div>
                             </div>
                         </div>
+                        
                         <div class="panel-card yield-summary-card">
                             <h3><i data-lucide="activity"></i> Yield Diagnostics</h3>
                             <div class="diagnostics-list">

@@ -47,9 +47,10 @@ class WebcamCamera(CameraInterface):
 
 class DemoImageCamera(CameraInterface):
     """Cycles through real pre-selected/demo PCB images for stable pitch demonstrations."""
-    def __init__(self, demo_dir="data/demo_samples", loop=True):
+    def __init__(self, demo_dir="data/demo_samples", loop=True, filter_keyword=None):
         self.demo_dir = demo_dir
         self.loop = loop
+        self.filter_keyword = filter_keyword
         self.image_paths = []
         
         # Load jpg, png, jpeg matches
@@ -57,6 +58,11 @@ class DemoImageCamera(CameraInterface):
             for ext in ('*.jpg', '*.png', '*.jpeg'):
                 self.image_paths.extend(glob.glob(os.path.join(demo_dir, ext)))
                 self.image_paths.extend(glob.glob(os.path.join(demo_dir, ext.upper())))
+                
+        # Filter by product keyword if requested
+        if self.filter_keyword:
+            kw = self.filter_keyword.lower()
+            self.image_paths = [p for p in self.image_paths if kw in os.path.basename(p).lower()]
                 
         self.image_paths = sorted(self.image_paths)
         self.idx = 0
