@@ -16,6 +16,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from camera import WebcamCamera, DemoImageCamera, get_available_cameras
 from detector import QualityInspector
 from database import init_db, log_inspection, get_analytics_summary, get_recent_inspections, populate_mock_history, DB_PATH, IS_VERCEL
+from report import generate_pdf_report
 
 # Configure directories dynamically to support read-only cloud filesystems
 if IS_VERCEL:
