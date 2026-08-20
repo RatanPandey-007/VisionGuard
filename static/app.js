@@ -665,8 +665,10 @@ async function downloadPDFReport(recordData, base64Image = null) {
             window.URL.revokeObjectURL(url);
             logToConsole(`PDF Report downloaded successfully for ID #${recordData.id}.`, "success");
         } else {
-            alert("Vercel serverless report generation failed.");
-            logToConsole("PDF compilation failed: server compiler error.", "error");
+            const errData = await response.json().catch(() => ({}));
+            const errMsg = errData.detail || "Server compiler error.";
+            alert(`Vercel serverless report generation failed: ${errMsg}`);
+            logToConsole(`PDF compilation failed: ${errMsg}`, "error");
         }
     } catch (e) {
         console.error("PDF download request failed:", e);

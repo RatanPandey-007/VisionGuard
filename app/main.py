@@ -377,7 +377,15 @@ def generate_report_stream(payload: ReportPayload):
     temp_img_path = None
     if image_bytes:
         try:
-            with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as temp_img:
+            # Determine correct suffix to avoid PIL/ReportLab decoder crashes
+            suffix = ".jpg"
+            if payload.image_b64:
+                if "image/png" in payload.image_b64:
+                    suffix = ".png"
+                elif "image/gif" in payload.image_b64:
+                    suffix = ".gif"
+                    
+            with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as temp_img:
                 temp_img.write(image_bytes)
                 temp_img_path = temp_img.name
         except Exception:
@@ -400,7 +408,13 @@ def generate_report_stream(payload: ReportPayload):
             "model_version": "YOLOv8n-PCB-v1.0"
         }
         
-        generate_pdf_report(rec_dict, temp_pdf_path)
+        try:
+            generate_pdf_report(rec_dict, temp_pdf_path)
+        except Exception as build_err:
+            # Fallback compile: compile WITHOUT the image to avoid server 500 crashes
+            print(f"PDF build error, retrying without image: {str(build_err)}")
+            rec_dict["image_path"] = None
+            generate_pdf_report(rec_dict, temp_pdf_path)
         
         # Read compiled PDF bytes
         with open(temp_pdf_path, "rb") as f:
