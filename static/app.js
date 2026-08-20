@@ -38,6 +38,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initial console welcome log
     logToConsole("VisionGuard Edge AI Quality Suite v1.0.0 initialized successfully.", "success");
     logToConsole(`System connected to local database: SQLite (${isCloudMode ? '/tmp' : 'data'} namespace).`, "info");
+    
+    // Calibrate initial telemetry metrics
+    document.getElementById("topbar-latency").innerText = "8.2ms";
+    document.getElementById("topbar-fps").innerText = "--";
 });
 
 // Helper to log messages to the UI terminal console
@@ -73,16 +77,13 @@ function playAudioAlert(isPass) {
             osc.connect(gain);
             gain.connect(ctx.destination);
             
-            // First Note (E5)
             osc.frequency.setValueAtTime(659.25, ctx.currentTime);
             gain.gain.setValueAtTime(0.1, ctx.currentTime);
             osc.start();
             
-            // Second Note (A5)
             osc.frequency.setValueAtTime(880.00, ctx.currentTime + 0.1);
             gain.gain.setValueAtTime(0.1, ctx.currentTime + 0.1);
             
-            // Fade out
             gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
             osc.stop(ctx.currentTime + 0.4);
             
@@ -96,18 +97,15 @@ function playAudioAlert(isPass) {
             osc.connect(gain);
             gain.connect(ctx.destination);
             
-            // First buzz
             osc.frequency.setValueAtTime(120.0, ctx.currentTime);
             gain.gain.setValueAtTime(0.15, ctx.currentTime);
             osc.start();
             
             gain.gain.setValueAtTime(0.0, ctx.currentTime + 0.15); // Gap
             
-            // Second buzz
             osc.frequency.setValueAtTime(120.0, ctx.currentTime + 0.2);
             gain.gain.setValueAtTime(0.15, ctx.currentTime + 0.2);
             
-            // Fade out
             gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
             osc.stop(ctx.currentTime + 0.5);
             
@@ -186,6 +184,8 @@ function switchTab(tabId) {
         updateAnalytics();
     } else if (tabId === "tab-history") {
         updateHistory();
+    } else if (tabId === "tab-reports") {
+        updateReports();
     }
 }
 
@@ -206,12 +206,10 @@ async function fetchConfig() {
 }
 
 function syncConfigToUI() {
-    // Sidebar bindings
+    // Calibration parameters
     document.getElementById("demo-mode-toggle").checked = appConfig.demo_mode_active;
     document.getElementById("threshold-slider").value = appConfig.decision_threshold;
     document.getElementById("threshold-val").innerText = appConfig.decision_threshold.toFixed(1) + "%";
-    
-    // Scanner Control Panel bindings
     document.getElementById("inspection-mode").value = appConfig.inspection_mode;
     document.getElementById("override-select").value = appConfig.demo_override;
     
@@ -263,28 +261,49 @@ async function updateCameraSelector() {
 function updateSystemHealthDisplay() {
     // Engine label
     const engineEl = document.getElementById("status-engine");
+    const topbarEngine = document.getElementById("topbar-engine-status");
+    
+    let modeLabel = "HYBRID CV SEGMENTER";
     if (appConfig.inspection_mode === "PCB") {
-        engineEl.innerText = "HYBRID CV SEGMENTER";
-        engineEl.className = "health-value status-ok";
+        modeLabel = "HYBRID CV SEGMENTER";
     } else if (appConfig.inspection_mode === "GEAR") {
-        engineEl.innerText = "CV GEOMETRY DETECTOR";
-        engineEl.className = "health-value status-ok";
+        modeLabel = "CV GEOMETRY DETECTOR";
     } else if (appConfig.inspection_mode === "PILLS") {
-        engineEl.innerText = "CV CAPSULE COUNTER";
-        engineEl.className = "health-value status-ok";
+        modeLabel = "CV CAPSULE COUNTER";
     } else {
-        engineEl.innerText = isCloudMode ? "CV CLASSIC MODE" : "YOLOv8 ENGINE (CPU)";
-        engineEl.className = "health-value status-ok";
+        modeLabel = isCloudMode ? "CV CLASSIC MODE" : "YOLOv8 ENGINE (CPU)";
     }
     
-    // Source label
+    if (engineEl) {
+        engineEl.innerText = modeLabel;
+        engineEl.className = "health-value status-ok";
+    }
+    if (topbarEngine) {
+        topbarEngine.innerHTML = `<span class="dot"></span> AI ENGINE: ${modeLabel}`;
+    }
+    
+    // Camera Source label
     const sourceEl = document.getElementById("status-source");
-    if (appConfig.demo_mode_active) {
-        sourceEl.innerText = "STATIC DEMO";
-        sourceEl.style.color = "var(--text-muted)";
-    } else {
-        sourceEl.innerText = isCloudMode ? "BROWSER WEBCAM (CLOUD)" : `PHYSICAL CAM (IDX ${appConfig.camera_index})`;
-        sourceEl.style.color = "var(--color-primary)";
+    const topbarCamera = document.getElementById("topbar-camera-status");
+    
+    let sourceLabel = "STATIC DEMO";
+    if (!appConfig.demo_mode_active) {
+        sourceLabel = isCloudMode ? "BROWSER WEBCAM (CLOUD)" : `PHYSICAL CAM (IDX ${appConfig.camera_index})`;
+    }
+    
+    if (sourceEl) {
+        sourceEl.innerText = sourceLabel;
+        sourceEl.style.color = appConfig.demo_mode_active ? "var(--text-muted)" : "var(--color-primary)";
+    }
+    if (topbarCamera) {
+        topbarCamera.innerHTML = `<span class="dot"></span> CAMERA: ${appConfig.demo_mode_active ? "DEMO ACTIVE" : "LIVE WEBCAM"}`;
+        topbarCamera.className = `status-indicator ${appConfig.demo_mode_active ? 'warning' : 'online'}`;
+    }
+    
+    // Inference topbar status
+    const topbarInference = document.getElementById("topbar-inference-status");
+    if (topbarInference) {
+        topbarInference.innerHTML = `<span class="dot"></span> LOCAL INFERENCE`;
     }
 }
 
@@ -357,6 +376,11 @@ function setupScannerListeners() {
     document.getElementById("inspection-mode").addEventListener("change", (e) => {
         appConfig.inspection_mode = e.target.value;
         logToConsole(`Active inspection profile switched to: [${appConfig.inspection_mode}]. Loading CV shaders...`, "success");
+        
+        // Dynamic simulated Topbar latency calibrations
+        const mockLat = appConfig.inspection_mode === "YOLO" ? "24.6ms" : "8.2ms";
+        document.getElementById("topbar-latency").innerText = mockLat;
+        
         saveConfig();
         
         // Refresh stream if active to load filtered dataset
@@ -416,9 +440,11 @@ async function handleStreamToggle(active) {
     const browserVideo = document.getElementById("browser-video");
     const standbyScreen = document.getElementById("standby-screen");
     const feedStatus = document.getElementById("feed-status-badge");
+    const topbarFps = document.getElementById("topbar-fps");
     
     if (active) {
         standbyScreen.style.display = "none";
+        topbarFps.innerText = "30";
         
         if (isCloudMode && !appConfig.demo_mode_active) {
             // Cloud Mode + Live WebCam: Request browser camera API stream
@@ -439,6 +465,7 @@ async function handleStreamToggle(active) {
                 document.getElementById("stream-toggle").checked = false;
                 standbyScreen.style.display = "flex";
                 browserVideo.style.display = "none";
+                topbarFps.innerText = "--";
             }
         } else {
             // Local Mode or Demo Mode Fallback: Stream standard Python MJPEG or Cycle Demo
@@ -464,6 +491,7 @@ async function handleStreamToggle(active) {
         
         feedStatus.innerHTML = '<span class="dot"></span> STANDBY';
         feedStatus.className = "feed-status";
+        topbarFps.innerText = "--";
         logToConsole("Visual stream stream suspended. Camera hardware released.", "info");
     }
 }
@@ -758,8 +786,6 @@ function renderCharts(distribution, currentPassRate) {
     // 2. Line Chart: Quality Yield Timeline Trend (Mocking past 5 days line trend)
     const lineCtx = document.getElementById("yieldLineChart").getContext("2d");
     const days = ["4 Days Ago", "3 Days Ago", "2 Days Ago", "Yesterday", "Current Shift"];
-    
-    // We create a line dataset that fluctuates realistically, ending on the current pass rate
     const passRatesTrend = [92.4, 91.8, 89.5, 93.1, currentPassRate];
     
     if (yieldLineChartInstance !== null) {
@@ -815,6 +841,9 @@ function setupDashboardListeners() {
                     alert("Database successfully reset!");
                     updateAnalytics();
                     updateHistory();
+                    if (document.getElementById("tab-reports").classList.contains("active")) {
+                        updateReports();
+                    }
                 }
             } catch (err) {
                 console.error("DB reset error:", err);
@@ -930,4 +959,75 @@ function selectHistoryRow(id, element) {
         e.preventDefault();
         await downloadPDFReport(record, null);
     };
+}
+
+// NEW SECTION: AUDIT REPORTS CENTER HANDLERS
+async function updateReports() {
+    try {
+        const response = await fetch("/api/history");
+        if (!response.ok) return;
+        
+        const data = await response.json();
+        renderReportsTable(data);
+        
+        const searchInput = document.getElementById("report-search-input");
+        searchInput.removeEventListener("input", filterReportsLogs);
+        searchInput.addEventListener("input", filterReportsLogs);
+    } catch (e) {
+        console.error("Failed to query reports history list:", e);
+    }
+}
+
+function renderReportsTable(dataList) {
+    const tableBody = document.getElementById("reports-table-body");
+    tableBody.innerHTML = "";
+    
+    if (dataList.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No compliance records found. Run inspections to build files.</td></tr>';
+        return;
+    }
+    
+    dataList.forEach(row => {
+        const tr = document.createElement("tr");
+        const badgeClass = row.result === "PASS" ? "badge-sm pass" : "badge-sm fail";
+        const defectText = row.defect_type ? row.defect_type : "—";
+        
+        tr.innerHTML = `
+            <td>#${row.id}</td>
+            <td>${row.timestamp}</td>
+            <td class="font-mono" style="font-weight: 600;">${row.product_id}</td>
+            <td><span class="${badgeClass}">${row.result}</span></td>
+            <td>${defectText}</td>
+            <td class="font-mono">${row.confidence.toFixed(1)}%</td>
+            <td style="text-align: center;">
+                <button class="btn btn-secondary btn-sm" id="btn-dl-rep-${row.id}" style="display: inline-flex; align-items: center; gap: 4px;">
+                    <i data-lucide="download" style="width: 12px; height: 12px;"></i> Export PDF
+                </button>
+            </td>
+        `;
+        
+        tableBody.appendChild(tr);
+        
+        // Bind dynamic PDF compile trigger to table buttons
+        document.getElementById(`btn-dl-rep-${row.id}`).addEventListener("click", async (e) => {
+            e.stopPropagation();
+            await downloadPDFReport(row, null);
+        });
+    });
+    lucide.createIcons();
+}
+
+function filterReportsLogs() {
+    const query = document.getElementById("report-search-input").value.trim().toLowerCase();
+    if (!query) {
+        updateReports();
+        return;
+    }
+    
+    const filtered = currentHistoryData.filter(item => 
+        item.product_id.toLowerCase().includes(query) ||
+        (item.defect_type && item.defect_type.toLowerCase().includes(query))
+    );
+    
+    renderReportsTable(filtered);
 }
