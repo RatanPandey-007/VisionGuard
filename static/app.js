@@ -418,9 +418,17 @@ async function handleStreamToggle(active) {
     const browserVideo = document.getElementById("browser-video");
     const standbyScreen = document.getElementById("standby-screen");
     const feedStatus = document.getElementById("feed-status-badge");
+    const scanLine = document.querySelector(".hud-scanline");
+    const liveCoords = document.getElementById("hud-live-coords");
     
     if (active) {
         standbyScreen.style.display = "none";
+        if (scanLine) scanLine.style.display = "block";
+        if (liveCoords) {
+            liveCoords.innerText = `DETECTOR: YOLOv8n-${appConfig.inspection_mode} | FPS: 30 | GAIN: AUTO`;
+            liveCoords.style.color = "var(--color-ai)";
+            liveCoords.style.borderColor = "var(--color-ai)";
+        }
         
         if (isCloudMode && !appConfig.demo_mode_active) {
             // Cloud Mode + Live WebCam: Request browser camera API stream
@@ -441,6 +449,7 @@ async function handleStreamToggle(active) {
                 document.getElementById("stream-toggle").checked = false;
                 standbyScreen.style.display = "flex";
                 browserVideo.style.display = "none";
+                if (scanLine) scanLine.style.display = "none";
             }
         } else {
             // Local Mode or Demo Mode Fallback: Stream standard Python MJPEG or Cycle Demo
@@ -463,6 +472,13 @@ async function handleStreamToggle(active) {
         streamImg.src = "";
         streamImg.style.display = "none";
         standbyScreen.style.display = "flex";
+        
+        if (scanLine) scanLine.style.display = "none";
+        if (liveCoords) {
+            liveCoords.innerText = `DETECTOR: INACTIVE | CONF: --`;
+            liveCoords.style.color = "var(--text-muted)";
+            liveCoords.style.borderColor = "var(--border-color)";
+        }
         
         feedStatus.innerHTML = '<span class="dot"></span> STANDBY';
         feedStatus.className = "feed-status";
@@ -523,6 +539,24 @@ async function triggerQualityScan() {
     const scanBtn = document.getElementById("trigger-scan-btn");
     const originalText = scanBtn.innerHTML;
     
+    const videoCont = document.getElementById("video-container");
+    const scanLine = document.querySelector(".hud-scanline");
+    const liveCoords = document.getElementById("hud-live-coords");
+    
+    if (videoCont) {
+        videoCont.classList.add("state-scanning");
+        videoCont.classList.remove("state-pass", "state-fail");
+    }
+    if (scanLine) {
+        scanLine.style.display = "block";
+        scanLine.style.animationDuration = "1.2s";
+    }
+    if (liveCoords) {
+        liveCoords.innerText = `RUNNING AI TARGET SEGMENTATION...`;
+        liveCoords.style.color = "var(--color-ai)";
+        liveCoords.style.borderColor = "var(--color-ai)";
+    }
+    
     scanBtn.disabled = true;
     scanBtn.innerHTML = '<i data-lucide="loader" class="animation-spin"></i> Running AI Engine...';
     lucide.createIcons();
@@ -535,6 +569,7 @@ async function triggerQualityScan() {
             const base64Img = await captureBrowserFrame();
             if (!base64Img) {
                 alert("Camera scan failed. Please verify that webcam permissions are enabled.");
+                if (videoCont) videoCont.classList.remove("state-scanning");
                 return;
             }
             payload.image = base64Img;
@@ -562,6 +597,21 @@ async function triggerQualityScan() {
             // Trigger browser audio synth buzz alert
             playAudioAlert(data.result === "PASS");
             
+            // Set HUD active states
+            if (videoCont) {
+                videoCont.classList.remove("state-scanning");
+                if (data.result === "PASS") {
+                    videoCont.classList.add("state-pass");
+                } else {
+                    videoCont.classList.add("state-fail");
+                }
+            }
+            if (liveCoords) {
+                liveCoords.innerText = `RUN: #${data.id} | CONF: ${data.confidence.toFixed(1)}% | RESULT: ${data.result}`;
+                liveCoords.style.color = data.result === "PASS" ? "var(--color-success)" : "var(--color-danger)";
+                liveCoords.style.borderColor = data.result === "PASS" ? "var(--color-success)" : "var(--color-danger)";
+            }
+            
             // If continuous feed is OFF, we display the returned inspection crop on the dashboard viewport
             const streamToggle = document.getElementById("stream-toggle");
             if (!streamToggle.checked) {
@@ -570,6 +620,18 @@ async function triggerQualityScan() {
                 standbyScreen.style.display = "none";
                 streamImg.style.display = "block";
                 streamImg.src = `${data.image_path}?t=${Date.now()}`;
+                
+                // Retard scanning sweep line after a delay
+                setTimeout(() => {
+                    const streamToggleNow = document.getElementById("stream-toggle");
+                    if (!streamToggleNow.checked && scanLine) {
+                        scanLine.style.display = "none";
+                    }
+                }, 2000);
+            }
+            
+            if (scanLine) {
+                scanLine.style.animationDuration = "4s";
             }
             
             // Dynamic dashboard updates
@@ -577,10 +639,14 @@ async function triggerQualityScan() {
             updateHistory();
         } else {
             alert("Visual Scan trigger failed. Please check local terminal logs.");
+            if (videoCont) videoCont.classList.remove("state-scanning");
+            if (scanLine) scanLine.style.animationDuration = "4s";
         }
     } catch (e) {
         console.error("Scanning request failed:", e);
         alert("Server failed to respond to quality inspection trigger.");
+        if (videoCont) videoCont.classList.remove("state-scanning");
+        if (scanLine) scanLine.style.animationDuration = "4s";
     } finally {
         scanBtn.disabled = false;
         scanBtn.innerHTML = originalText;
