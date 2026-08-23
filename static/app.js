@@ -31,6 +31,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initialize tab trigger callbacks
     setupTabTriggers();
     
+    // Initialize WebGL spatial background
+    initSpatialBackground();
+    
     // Initial fetch of analytics and history data
     updateAnalytics();
     updateHistory();
@@ -39,6 +42,84 @@ document.addEventListener("DOMContentLoaded", () => {
     logToConsole("VisionGuard Edge AI Quality Suite v1.0.0 initialized successfully.", "success");
     logToConsole(`System connected to local database: SQLite (${isCloudMode ? '/tmp' : 'data'} namespace).`, "info");
 });
+
+// Dynamic WebGL Spatial Background using Three.js
+function initSpatialBackground() {
+    const canvas = document.getElementById("spatial-bg-canvas");
+    if (!canvas || !window.THREE) return;
+
+    try {
+        const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.set(0, 5, 12);
+        camera.lookAt(0, 0, 0);
+
+        // Grid helper representing the spatial inspection layout table surface
+        const gridHelper = new THREE.GridHelper(30, 30, 0x06b6d4, 0x1e293b);
+        gridHelper.position.y = -2;
+        gridHelper.material.opacity = 0.2;
+        gridHelper.material.transparent = true;
+        scene.add(gridHelper);
+
+        // Add a floating target wireframe representing a workpiece/PCB board
+        const pcbGeometry = new THREE.BoxGeometry(6, 0.1, 4);
+        const edges = new THREE.EdgesGeometry(pcbGeometry);
+        const pcbMaterial = new THREE.LineBasicMaterial({ color: 0x3b82f6, transparent: true, opacity: 0.3 });
+        const pcbLine = new THREE.LineSegments(edges, pcbMaterial);
+        pcbLine.position.set(0, 0.5, 0);
+        scene.add(pcbLine);
+
+        // Floating particle nodes representing visual scanning markers
+        const particleCount = 40;
+        const particleGeo = new THREE.BufferGeometry();
+        const positions = new Float32Array(particleCount * 3);
+        for(let i=0; i<particleCount*3; i+=3) {
+            positions[i] = (Math.random() - 0.5) * 16;
+            positions[i+1] = (Math.random() - 0.5) * 8;
+            positions[i+2] = (Math.random() - 0.5) * 10;
+        }
+        particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        const particleMat = new THREE.PointsMaterial({
+            color: 0x06b6d4,
+            size: 0.12,
+            transparent: true,
+            opacity: 0.35
+        });
+        const particles = new THREE.Points(particleGeo, particleMat);
+        scene.add(particles);
+
+        // Animation Loop
+        const clock = new THREE.Clock();
+        function animate() {
+            requestAnimationFrame(animate);
+            const elapsedTime = clock.getElapsedTime();
+
+            // Rotate workpiece and background grid helper
+            pcbLine.rotation.y = elapsedTime * 0.15;
+            pcbLine.rotation.x = Math.sin(elapsedTime * 0.15) * 0.08;
+            gridHelper.rotation.y = -elapsedTime * 0.02;
+            particles.rotation.y = elapsedTime * 0.04;
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Handle resize
+        window.addEventListener("resize", () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        logToConsole("Spatial WebGL environment established.", "info");
+    } catch (e) {
+        console.warn("WebGL initialization failed:", e);
+    }
+}
 
 // Helper to log messages to the UI terminal console
 function logToConsole(message, type = "info") {

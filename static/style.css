@@ -1,26 +1,26 @@
 /* VISIONGUARD 3D DARK INDUSTRIAL DESIGN SYSTEM */
 :root {
-    --bg-main: #060913;          /* Deep dark slate space */
-    --bg-sidebar: #0b0f19;       /* Solid dark panel background */
-    --bg-card: rgba(18, 26, 47, 0.75); /* Dark glass layer surface */
-    --border-color: rgba(59, 130, 246, 0.12); /* Glowing blue borders */
-    --border-bevel: rgba(255, 255, 255, 0.08); /* High bevel top border */
-    --text-primary: #f8fafc;     /* Off-white labels */
-    --text-muted: #64748b;       /* Neutrals grey */
+    --bg-main: #04060a;          /* Deep dark space */
+    --bg-sidebar: rgba(16, 22, 36, 0.55);
+    --bg-card: rgba(15, 21, 35, 0.45); /* High translucency glass */
+    --border-color: rgba(255, 255, 255, 0.06); /* Precise glass borders */
+    --border-bevel: rgba(255, 255, 255, 0.1);  /* Top bevel rim light */
+    --text-primary: #f8fafc;
+    --text-muted: #8493a8;       /* High-readability neutral */
     --color-primary: #3b82f6;    /* Precision Blue */
     --color-primary-hover: #2563eb;
-    --color-success: #10b981;    /* Emerald Green (PASS) */
-    --color-danger: #ef4444;     /* Industrial Red (FAIL) */
-    --color-warning: #f59e0b;    /* Alert Amber (WARNING) */
-    --color-ai: #06b6d4;         /* Cyber Cyan */
-    --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --color-success: #10b981;    /* Emerald PASS */
+    --color-danger: #ef4444;     /* Warning FAIL */
+    --color-warning: #f59e0b;    /* Alert Amber */
+    --color-ai: #06b6d4;         /* Telemetry Cyan */
+    --font-sans: 'Outfit', -apple-system, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
     
     /* Depth shadow indices */
-    --shadow-l1: 0 4px 12px rgba(0, 0, 0, 0.5);
-    --shadow-l2: 0 12px 30px rgba(0, 0, 0, 0.65), 0 0 1px rgba(59, 130, 246, 0.15);
-    --shadow-l3: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 1px rgba(6, 182, 212, 0.25);
-    --shadow-result: 0 0 24px rgba(16, 185, 129, 0.35);
+    --shadow-l1: 0 8px 24px rgba(0, 0, 0, 0.4);
+    --shadow-l2: 0 16px 36px rgba(0, 0, 0, 0.55), 0 0 1px rgba(255, 255, 255, 0.08);
+    --shadow-l3: 0 24px 48px rgba(0, 0, 0, 0.7), 0 0 1px rgba(255, 255, 255, 0.12);
+    --shadow-result: 0 0 24px rgba(16, 185, 129, 0.15);
 }
 
 * {
@@ -37,29 +37,43 @@ body {
     height: 100vh;
 }
 
+#spatial-bg-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1;
+    pointer-events: none;
+}
+
 /* Base Grids Layout Shell with structural grid background */
 .app-container {
+    position: relative;
+    z-index: 2;
     display: grid;
     grid-template-columns: 280px 1fr;
     height: 100vh;
     width: 100vw;
-    background: radial-gradient(circle at 60% 40%, #0e1c36 0%, #050811 100%);
+    background: radial-gradient(circle at 60% 40%, rgba(14, 28, 54, 0.45) 0%, rgba(5, 8, 17, 0.75) 100%);
     background-image: 
-        radial-gradient(circle at 60% 40%, #0e1b35 0%, #060913 100%),
-        linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+        radial-gradient(circle at 60% 40%, rgba(14, 27, 53, 0.45) 0%, rgba(6, 9, 19, 0.75) 100%),
+        linear-gradient(rgba(255, 255, 255, 0.012) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.012) 1px, transparent 1px);
     background-size: 100% 100%, 32px 32px, 32px 32px;
 }
 
 /* SIDEBAR - FLOATING GLASS MATERIAL */
 .sidebar {
-    background: linear-gradient(180deg, rgba(11, 15, 25, 0.98) 0%, rgba(6, 9, 16, 0.99) 100%);
-    border-right: 1px solid rgba(59, 130, 246, 0.16);
+    background: rgba(16, 22, 36, 0.55);
+    backdrop-filter: blur(25px) saturate(120%);
+    -webkit-backdrop-filter: blur(25px) saturate(120%);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
     display: flex;
     flex-direction: column;
     padding: 24px;
     overflow-y: auto;
-    box-shadow: 10px 0 40px rgba(0, 0, 0, 0.7);
+    box-shadow: 15px 0 40px rgba(0, 0, 0, 0.4);
     z-index: 100;
 }
 
@@ -75,7 +89,7 @@ body {
     width: 30px;
     height: 30px;
     color: var(--color-primary);
-    filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.5));
+    filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.4));
 }
 
 .brand-text h2 {
@@ -94,17 +108,19 @@ body {
 
 .sidebar-divider {
     height: 1px;
-    background: linear-gradient(90deg, transparent 0%, rgba(59, 130, 246, 0.2) 50%, transparent 100%);
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.08) 50%, transparent 100%);
     margin: 16px 0 24px 0;
 }
 
 .sidebar-section {
     margin-bottom: 28px;
-    background: rgba(255,255,255,0.01);
-    border: 1px solid rgba(255,255,255,0.02);
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
     padding: 16px;
-    border-radius: 8px;
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.02);
 }
 
 .sidebar-section h3 {
@@ -132,7 +148,7 @@ body {
     align-items: center;
     font-size: 0.76rem;
     padding: 8px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
 }
 
 .health-item:last-child {
@@ -152,7 +168,7 @@ body {
 
 .status-ok {
     color: var(--color-success);
-    text-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+    text-shadow: 0 0 8px rgba(16, 185, 129, 0.2);
 }
 
 .sidebar-footer {
@@ -174,55 +190,54 @@ body {
 
 /* TOPBAR HEADER SLOTS */
 .topbar {
-    background-color: rgba(11, 15, 25, 0.85);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(59, 130, 246, 0.16);
+    background-color: rgba(10, 14, 23, 0.35);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     display: flex;
     align-items: center;
     padding: 0 24px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     z-index: 90;
 }
 
 .nav-tabs {
     display: flex;
-    gap: 8px;
+    gap: 12px;
 }
 
 .tab-btn {
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    padding: 10px 18px;
-    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.02);
+    color: rgba(255, 255, 255, 0.6);
+    padding: 8px 18px;
+    border-radius: 30px;
     cursor: pointer;
     font-family: inherit;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     font-weight: 600;
     display: flex;
     align-items: center;
     gap: 8px;
-    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-    border: 1px solid transparent;
+    transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .tab-btn:hover {
-    color: var(--text-primary);
-    background-color: rgba(255, 255, 255, 0.03);
-    border-color: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.1);
 }
 
 .tab-btn.active {
     color: #fff;
-    background: linear-gradient(180deg, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0.05) 100%);
-    border: 1px solid rgba(59, 130, 246, 0.4);
-    box-shadow: 0 0 12px rgba(59, 130, 246, 0.15);
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
 .tab-btn i {
-    width: 16px;
-    height: 16px;
+    width: 15px;
+    height: 15px;
 }
 
 /* TAB PANEL CONTAINER */
@@ -262,12 +277,12 @@ body {
 }
 
 .panel-card:hover {
-    transform: translateY(-4px);
-    border-color: rgba(6, 182, 212, 0.3);
+    transform: translateY(-3px);
+    border-color: rgba(255, 255, 255, 0.12);
     box-shadow: 
         inset 0 1px 0 rgba(255, 255, 255, 0.1),
-        0 20px 40px rgba(0, 0, 0, 0.75),
-        0 0 12px rgba(6, 182, 212, 0.15);
+        0 20px 40px rgba(0, 0, 0, 0.5),
+        0 0 15px rgba(255, 255, 255, 0.02);
 }
 
 .panel-card h3 {
@@ -475,20 +490,21 @@ body {
 
 .mock-pcb-board {
     flex-grow: 1;
-    background-color: #1f3729;
+    background-color: rgba(14, 25, 20, 0.45);
     border-radius: 6px;
     margin: 12px 0;
     position: relative;
-    border: 1px solid #102117;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    box-shadow: inset 0 0 20px rgba(16, 185, 129, 0.06);
 }
 
 .mock-trace {
     position: absolute;
-    background: rgba(220, 200, 100, 0.12);
+    background: rgba(16, 185, 129, 0.08);
 }
 
 .mock-trace.horizontal {
-    height: 2px;
+    height: 1px;
     width: 80%;
     left: 10%;
 }
@@ -496,7 +512,7 @@ body {
 .mock-trace.trace-1 { top: 30%; }
 .mock-trace.trace-2 { top: 60%; }
 .mock-trace.vertical {
-    width: 2px;
+    width: 1px;
     height: 80%;
     top: 10%;
     left: 45%;
@@ -504,11 +520,12 @@ body {
 
 .mock-chip {
     position: absolute;
-    background: #252830;
-    border: 1px solid #3c404c;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(16, 185, 129, 0.4);
     border-radius: 2px;
     width: 24px;
     height: 36px;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.1);
 }
 
 .mock-chip.chip-1 {
@@ -530,26 +547,21 @@ body {
 
 .ai-box-label {
     position: absolute;
-    top: -12px;
-    left: -6px;
-    font-size: 0.5rem;
+    top: -15px;
+    left: -1px;
+    font-size: 0.58rem;
     font-family: var(--font-mono);
     color: var(--color-success);
-    background: rgba(0,0,0,0.8);
-    padding: 1px 3px;
+    background: rgba(4, 6, 10, 0.85);
+    padding: 1px 4px;
     white-space: nowrap;
-    border: 1px solid var(--color-success);
-    border-radius: 2px;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 3px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
 }
 
 .mock-chip::before {
-    content: '';
-    position: absolute;
-    top: -2px;
-    left: -2px;
-    right: -2px;
-    bottom: -2px;
-    border: 1px solid var(--color-success);
+    display: none;
 }
 
 .mock-overlay-hud {
@@ -890,12 +902,17 @@ body {
 
 /* AI execution CLI terminal console */
 .console-card {
-    background-color: #03050a;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
+    background: rgba(4, 6, 10, 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
     padding: 12px 16px;
     margin-top: 16px;
     font-family: var(--font-mono);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
 .console-header {
@@ -905,7 +922,7 @@ body {
     font-size: 0.72rem;
     font-weight: 600;
     color: var(--text-muted);
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
     padding-bottom: 8px;
     margin-bottom: 8px;
 }
@@ -931,11 +948,11 @@ body {
 }
 
 .console-logs::-webkit-scrollbar-thumb {
-    background-color: var(--border-color);
-    border-radius: 2px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
 }
 
-.log-line.info { color: #94a3b8; }
+.log-line.info { color: rgba(255, 255, 255, 0.6); }
 .log-line.warn { color: var(--color-warning); }
 .log-line.error { color: var(--color-danger); }
 .log-line.success { color: var(--color-success); }
@@ -1312,16 +1329,19 @@ body {
 
 .history-table tbody tr {
     cursor: pointer;
-    transition: background-color 0.15s, transform 0.15s;
+    background-color: rgba(255, 255, 255, 0.01);
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
 }
 
 .history-table tbody tr:hover {
-    background-color: rgba(255,255,255,0.02);
+    background-color: rgba(255, 255, 255, 0.04);
+    transform: scale(1.005);
 }
 
 .history-table tbody tr.selected {
-    background-color: rgba(59, 130, 246, 0.08) !important;
-    border-left: 3px solid var(--color-primary);
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    border-left: 2px solid var(--color-primary);
 }
 
 .badge-sm {
