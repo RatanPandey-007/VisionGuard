@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
     logToConsole(`System connected to local database: SQLite (${isCloudMode ? '/tmp' : 'data'} namespace).`, "info");
 });
 
-// Dynamic WebGL Spatial Background using Three.js
+// Dynamic WebGL Spatial Background using Three.js (Tesla & SpaceX Render Style)
 function initSpatialBackground() {
     const canvas = document.getElementById("spatial-bg-canvas");
     if (!canvas || !window.THREE) return;
@@ -54,43 +54,87 @@ function initSpatialBackground() {
         renderer.setSize(window.innerWidth, window.innerHeight);
 
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
         camera.position.set(0, 5, 12);
         camera.lookAt(0, 0, 0);
 
-        // Grid helper representing the spatial inspection layout table surface
-        const gridHelper = new THREE.GridHelper(30, 30, 0x06b6d4, 0x1e293b);
-        gridHelper.position.y = -2;
-        gridHelper.material.opacity = 0.2;
-        gridHelper.material.transparent = true;
-        scene.add(gridHelper);
+        // Core visual group representing the industrial inspection platform assembly
+        const machineGroup = new THREE.Group();
 
-        // Add a floating target wireframe representing a workpiece/PCB board
-        const pcbGeometry = new THREE.BoxGeometry(6, 0.1, 4);
-        const edges = new THREE.EdgesGeometry(pcbGeometry);
-        const pcbMaterial = new THREE.LineBasicMaterial({ color: 0x3b82f6, transparent: true, opacity: 0.3 });
-        const pcbLine = new THREE.LineSegments(edges, pcbMaterial);
-        pcbLine.position.set(0, 0.5, 0);
-        scene.add(pcbLine);
+        // 1. Workbench platform table (brushed silver plate)
+        const platformGeo = new THREE.BoxGeometry(6.5, 0.3, 4.5);
+        const platformMat = new THREE.MeshStandardMaterial({ color: 0xeeeeee, roughness: 0.2, metalness: 0.75 });
+        const platformMesh = new THREE.Mesh(platformGeo, platformMat);
+        platformMesh.position.y = -1.5;
+        machineGroup.add(platformMesh);
 
-        // Floating particle nodes representing visual scanning markers
-        const particleCount = 40;
-        const particleGeo = new THREE.BufferGeometry();
-        const positions = new Float32Array(particleCount * 3);
-        for(let i=0; i<particleCount*3; i+=3) {
-            positions[i] = (Math.random() - 0.5) * 16;
-            positions[i+1] = (Math.random() - 0.5) * 8;
-            positions[i+2] = (Math.random() - 0.5) * 10;
-        }
-        particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        const particleMat = new THREE.PointsMaterial({
-            color: 0x06b6d4,
-            size: 0.12,
-            transparent: true,
-            opacity: 0.35
+        // 2. Vertical silver column (aluminum chassis mount)
+        const verticalArmGeo = new THREE.BoxGeometry(0.4, 4.0, 0.4);
+        const armMat = new THREE.MeshStandardMaterial({ color: 0xdddddd, roughness: 0.3, metalness: 0.85 });
+        const verticalArmMesh = new THREE.Mesh(verticalArmGeo, armMat);
+        verticalArmMesh.position.set(-2.8, 0.5, -1.8);
+        machineGroup.add(verticalArmMesh);
+
+        // 3. Horizontal camera support track
+        const horizontalArmGeo = new THREE.BoxGeometry(3.0, 0.3, 0.3);
+        const horizontalArmMesh = new THREE.Mesh(horizontalArmGeo, armMat);
+        horizontalArmMesh.position.set(-1.5, 2.2, -1.8);
+        machineGroup.add(horizontalArmMesh);
+
+        // 4. Optical camera housing capsule (SpaceX carbon aesthetic)
+        const cameraHousingGeo = new THREE.CylinderGeometry(0.35, 0.35, 1.0, 16);
+        const cameraHousingMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.5, metalness: 0.4 });
+        const cameraHousingMesh = new THREE.Mesh(cameraHousingGeo, cameraHousingMat);
+        cameraHousingMesh.position.set(0, 1.6, -1.8);
+        machineGroup.add(cameraHousingMesh);
+
+        // 5. Optical lens
+        const lensGeo = new THREE.CylinderGeometry(0.25, 0.25, 0.3, 16);
+        const lensMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.1, metalness: 0.95 });
+        const lensMesh = new THREE.Mesh(lensGeo, lensMat);
+        lensMesh.position.set(0, 1.0, -1.8);
+        machineGroup.add(lensMesh);
+
+        // 6. Styled target PCB workpiece
+        const pcbGeo = new THREE.BoxGeometry(3.8, 0.08, 2.6);
+        const pcbMat = new THREE.MeshStandardMaterial({ color: 0x20a464, roughness: 0.6 });
+        const pcbMesh = new THREE.Mesh(pcbGeo, pcbMat);
+        pcbMesh.position.set(0, -1.3, 0);
+        machineGroup.add(pcbMesh);
+
+        // 7. Small surface chips on the PCB
+        const chipGeo = new THREE.BoxGeometry(0.5, 0.12, 0.5);
+        const chipMat = new THREE.MeshStandardMaterial({ color: 0x1f1f1f, roughness: 0.8 });
+        const chip1 = new THREE.Mesh(chipGeo, chipMat);
+        chip1.position.set(-1, -1.2, -0.5);
+        machineGroup.add(chip1);
+
+        const chip2 = new THREE.Mesh(chipGeo, chipMat);
+        chip2.position.set(0.8, -1.2, 0.6);
+        machineGroup.add(chip2);
+
+        scene.add(machineGroup);
+
+        // Premium lighting system (Tesla showroom lights)
+        const mainLight = new THREE.DirectionalLight(0xffffff, 1.3);
+        mainLight.position.set(6, 12, 8);
+        scene.add(mainLight);
+
+        const fillLight = new THREE.DirectionalLight(0x4c9aff, 0.5); // Soft SpaceX blue highlight
+        fillLight.position.set(-6, 6, -6);
+        scene.add(fillLight);
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.45);
+        scene.add(ambientLight);
+
+        // Track user scroll state for camera flyby LERPs
+        let scrollPercent = 0;
+        window.addEventListener("scroll", () => {
+            const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+            if (scrollHeight > 0) {
+                scrollPercent = window.scrollY / scrollHeight;
+            }
         });
-        const particles = new THREE.Points(particleGeo, particleMat);
-        scene.add(particles);
 
         // Animation Loop
         const clock = new THREE.Clock();
@@ -98,11 +142,18 @@ function initSpatialBackground() {
             requestAnimationFrame(animate);
             const elapsedTime = clock.getElapsedTime();
 
-            // Rotate workpiece and background grid helper
-            pcbLine.rotation.y = elapsedTime * 0.15;
-            pcbLine.rotation.x = Math.sin(elapsedTime * 0.15) * 0.08;
-            gridHelper.rotation.y = -elapsedTime * 0.02;
-            particles.rotation.y = elapsedTime * 0.04;
+            // Interpolate camera angle coordinates based on scroll percent
+            const targetX = Math.sin(scrollPercent * Math.PI) * 4.5;
+            const targetY = 5.0 - (scrollPercent * 3.5);
+            const targetZ = 12.0 - (scrollPercent * 6.5);
+
+            camera.position.x += (targetX - camera.position.x) * 0.05;
+            camera.position.y += (targetY - camera.position.y) * 0.05;
+            camera.position.z += (targetZ - camera.position.z) * 0.05;
+            camera.lookAt(0, -0.5, 0);
+
+            // Subtle idle platform float rotation
+            machineGroup.rotation.y = elapsedTime * 0.06;
 
             renderer.render(scene, camera);
         }
@@ -115,9 +166,9 @@ function initSpatialBackground() {
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        logToConsole("Spatial WebGL environment established.", "info");
+        logToConsole("Tesla-showroom studio scene initialized.", "info");
     } catch (e) {
-        console.warn("WebGL initialization failed:", e);
+        console.warn("Three.js setup failed:", e);
     }
 }
 
@@ -879,8 +930,8 @@ function renderCharts(distribution, currentPassRate) {
                 datasets: [{
                     label: "Incident Quantity",
                     data: data,
-                    backgroundColor: "rgba(59, 130, 246, 0.4)",
-                    borderColor: "rgba(59, 130, 246, 1)",
+                    backgroundColor: "rgba(22, 119, 255, 0.15)",
+                    borderColor: "#1677ff",
                     borderWidth: 1.5,
                     borderRadius: 4
                 }]
@@ -894,12 +945,12 @@ function renderCharts(distribution, currentPassRate) {
                 scales: {
                     y: {
                         beginAtZero: true,
-                        grid: { color: "rgba(255, 255, 255, 0.05)" },
-                        ticks: { color: "#94a3b8" }
+                        grid: { color: "#f3f4f6" },
+                        ticks: { color: "#6b7078" }
                     },
                     x: {
                         grid: { display: false },
-                        ticks: { color: "#94a3b8" }
+                        ticks: { color: "#6b7078" }
                     }
                 }
             }
@@ -924,13 +975,13 @@ function renderCharts(distribution, currentPassRate) {
                 datasets: [{
                     label: "Pass Yield (%)",
                     data: passRatesTrend,
-                    borderColor: "rgba(16, 185, 129, 1)",
-                    backgroundColor: "rgba(16, 185, 129, 0.1)",
+                    borderColor: "#1677ff",
+                    backgroundColor: "rgba(22, 119, 255, 0.1)",
                     borderWidth: 2,
                     tension: 0.35,
                     fill: true,
                     pointRadius: 4,
-                    pointBackgroundColor: "rgba(16, 185, 129, 1)"
+                    pointBackgroundColor: "#1677ff"
                 }]
             },
             options: {
@@ -943,12 +994,12 @@ function renderCharts(distribution, currentPassRate) {
                     y: {
                         min: 80,
                         max: 100,
-                        grid: { color: "rgba(255, 255, 255, 0.05)" },
-                        ticks: { color: "#94a3b8" }
+                        grid: { color: "#f3f4f6" },
+                        ticks: { color: "#6b7078" }
                     },
                     x: {
                         grid: { display: false },
-                        ticks: { color: "#94a3b8" }
+                        ticks: { color: "#6b7078" }
                     }
                 }
             }
