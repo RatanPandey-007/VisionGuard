@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 240" width="100%" height="100%">
+  <defs>
+    <linearGradient id="vgBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#050811" />
+      <stop offset="50%" stop-color="#0a1224" />
+      <stop offset="100%" stop-color="#080e1b" />
+    </linearGradient>
+    <filter id="vgGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    <pattern id="vgGrid" width="25" height="25" patternUnits="userSpaceOnUse">
+      <path d="M 25 0 L 0 0 0 25" fill="none" stroke="#38bdf8" stroke-width="0.5" stroke-opacity="0.06" />
+    </pattern>
+    <linearGradient id="vgGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="50%" stop-color="#00f3ff" />
+      <stop offset="100%" stop-color="#3b82f6" />
+    </linearGradient>
+  </defs>
+
+  <style>
+    .mono { font-family: 'JetBrains Mono', monospace, 'Courier New'; }
+    .sans { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; }
+  </style>
+
+  <rect width="900" height="240" fill="url(#vgBg)" rx="10" />
+  <rect width="900" height="240" fill="url(#vgGrid)" rx="10" />
+  <rect x="10" y="10" width="880" height="220" fill="none" stroke="#1e293b" stroke-width="1.2" rx="8" />
+
+  <!-- Corner Brackets -->
+  <path d="M 10 32 L 10 10 L 32 10" fill="none" stroke="#38bdf8" stroke-width="2.5" />
+  <path d="M 868 10 L 890 10 L 890 32" fill="none" stroke="#38bdf8" stroke-width="2.5" />
+  <path d="M 10 208 L 10 230 L 32 230" fill="none" stroke="#38bdf8" stroke-width="2.5" />
+  <path d="M 868 230 L 890 230 L 890 208" fill="none" stroke="#38bdf8" stroke-width="2.5" />
+
+  <!-- Top System Header -->
+  <rect x="25" y="20" width="850" height="24" fill="#0c1833" rx="4" stroke="#1e3a8a" stroke-width="0.8" />
+  <circle cx="38" cy="32" r="3.5" fill="#38bdf8" />
+  <text x="50" y="36" fill="#93c5fd" class="mono" font-size="10.5" font-weight="600">VISIONGUARD EDGE // OFFLINE AI QUALITY INSPECTION FOR INDIAN MSMES</text>
+  <rect x="740" y="24" width="120" height="16" fill="#3b82f6" fill-opacity="0.15" rx="3" stroke="#38bdf8" stroke-width="0.8" />
+  <text x="749" y="36" fill="#38bdf8" class="mono" font-size="9" font-weight="700">MSME HACKATHON 6.0</text>
+
+  <!-- Title & Subtitle -->
+  <text x="45" y="96" fill="url(#vgGrad)" class="sans" font-size="38" font-weight="900" letter-spacing="3" filter="url(#vgGlow)">VISIONGUARD EDGE</text>
+  <text x="45" y="96" fill="#ffffff" class="sans" font-size="38" font-weight="900" letter-spacing="3">VISIONGUARD EDGE</text>
+  
+  <text x="47" y="124" fill="#93c5fd" class="mono" font-size="11.5" font-weight="600" letter-spacing="1.2">
+    AFFORDABLE OPENCV AUTOMATED OPTICAL INSPECTION • SUB-₹5,000 HARDWARE RETROFIT • 100% OFFLINE
+  </text>
+
+  <line x1="45" y1="138" x2="680" y2="138" stroke="url(#vgGrad)" stroke-width="1.2" />
+
+  <!-- Telemetry Pills -->
+  <g transform="translate(45, 155)">
+    <rect x="0" y="0" width="165" height="22" fill="#0f1f3d" rx="3" stroke="#38bdf8" stroke-width="0.8" />
+    <text x="10" y="15" fill="#e2e8f0" class="mono" font-size="10">OPENCV HEADLESS CORE</text>
+
+    <rect x="175" y="0" width="170" height="22" fill="#0f1f3d" rx="3" stroke="#00f3ff" stroke-width="0.8" />
+    <text x="185" y="15" fill="#e2e8f0" class="mono" font-size="10">DEFECT CONTOUR ENGINE</text>
+
+    <rect x="355" y="0" width="155" height="22" fill="#0f1f3d" rx="3" stroke="#10b981" stroke-width="0.8" />
+    <text x="365" y="15" fill="#e2e8f0" class="mono" font-size="10">CPU-ONLY INFERENCE</text>
+  </g>
+
+  <!-- Status Log -->
+  <text x="45" y="208" fill="#94a3b8" class="mono" font-size="11">
+    <tspan fill="#38bdf8" font-weight="700">INSPECTION MODES:</tspan> PCB Missing/Misaligned Chips • Gear Teeth Fractures • Blister Pack Pill Absence
+  </text>
+
+  <!-- Right Visual Widget: Optical Crosshair Reticle -->
+  <g transform="translate(770, 115)">
+    <rect x="10" y="10" width="80" height="80" fill="none" stroke="#38bdf8" stroke-width="1" stroke-dasharray="6,4" stroke-opacity="0.4" />
+    <!-- Optical Bounding Box -->
+    <rect x="25" y="25" width="50" height="50" fill="#38bdf8" fill-opacity="0.08" stroke="#00f3ff" stroke-width="1.5" />
+    <!-- Defect Mark -->
+    <circle cx="50" cy="50" r="14" fill="none" stroke="#ef4444" stroke-width="1.5" />
+    <line x1="50" y1="30" x2="50" y2="70" stroke="#ef4444" stroke-width="1.2" stroke-dasharray="2,2" />
+    <line x1="30" y1="50" x2="70" y2="50" stroke="#ef4444" stroke-width="1.2" stroke-dasharray="2,2" />
+    <rect x="25" y="15" width="46" height="10" fill="#ef4444" rx="2" />
+    <text x="28" y="23" fill="#ffffff" class="mono" font-size="7.5" font-weight="700">DEFECT DETECT</text>
+  </g>
+</svg>
